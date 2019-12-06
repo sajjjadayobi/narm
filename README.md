@@ -2,6 +2,6 @@
   
   in the AI research
 
-### data science project structure:
+### Data science project structure:
 
-<img  align="center" src="data science project structure.png" />
+<img align="middle" src="data science project structure.png" />
