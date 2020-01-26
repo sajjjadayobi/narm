@@ -1,0 +1,1 @@
+jt -t grade3 -f code -fs 110 -tfs 11 -nfs 130 -cellw 70% -T -lineh 105 -kl -ofs 110 -nf opensans -nfs 110 -tf opensans
