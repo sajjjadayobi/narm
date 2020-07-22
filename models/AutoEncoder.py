@@ -69,8 +69,7 @@ class ConvAutoEncoder(nn.Module):
             nn.ReLU(),
             nn.Upsample(size=(28, 28)),
             nn.Conv2d(16, 1, kernel_size=3, padding=(1, 1)),  
-            nn.Sigmoid(),) # Sigmoid for BCELoss
-            # for MSELoss dont use sigmoid
+            nn.Sigmoid(),)
 
     def forward(self, x):
         x = self.encoder(x)
@@ -187,7 +186,7 @@ class TrainAE():
 model = ConvAutoEncoder()
 optimizer = optim.Adam(lr=0.01, params=model.parameters())
 scheduler = optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=1, gamma=.5)
-criterion = nn.BCELoss()
+criterion = nn.BCELoss() # or nn.MSELoss()
 History = train_model(model=model, train_dl=train_dl, valid_dl=test_dl, optimizer=optimizer, criterion=criterion, scheduler=scheduler,  num_epochs=1)
 
 
