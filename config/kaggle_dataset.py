@@ -4,3 +4,6 @@
 !chmod 600 /root/.kaggle/kaggle.json
 # you must accept relus and late submistion on this competition
 !kaggle competitions download -c COMPETITION_NAME
+
+# for direcly download a dataset from anywhere
+!wget --load-cookies cookies.txt "URL" -O FILE_NAME
