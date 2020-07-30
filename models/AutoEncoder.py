@@ -182,12 +182,12 @@ class TrainAE():
 
     
     
-# create a learning process
+# Model one with BECLoss
 model = ConvAutoEncoder()
-optimizer = optim.Adam(lr=0.01, params=model.parameters())
-scheduler = optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=1, gamma=.5)
-criterion = nn.BCELoss() # or nn.MSELoss()
-History = train_model(model=model, train_dl=train_dl, valid_dl=test_dl, optimizer=optimizer, criterion=criterion, scheduler=scheduler,  num_epochs=1)
+optimizer = optim.Adam(lr=0.005, params=model.parameters())
+scheduler = optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=1, gamma=.9)
+criterion = nn.BCELoss()
+History = train_model(model=model, train_dl=train_dl, valid_dl=test_dl, optimizer=optimizer, criterion=criterion, scheduler=scheduler,  num_epochs=3)
 
 
 # row 1 show original data
@@ -203,8 +203,123 @@ for i, ax in zip(indexs, axis.flat):
 
 model.eval()
 X = model(x).cpu().detach().numpy()
-
 fig, axis = plt.subplots(1, 5, figsize=(25, 8))
 for i, ax in zip(indexs, axis.flat):
     ax.imshow(X[i][0], cmap='gray_r')
+    ax.axis('off')
+    
+    
+
+# Model tow with MSELoss
+model = ConvAutoEncoder()
+optimizer = optim.Adam(lr=0.005, params=model.parameters())
+scheduler = optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=1, gamma=.9)
+criterion = nn.MSELoss()
+History = train_model(model=model, train_dl=train_dl, valid_dl=test_dl, optimizer=optimizer, criterion=criterion, scheduler=scheduler,  num_epochs=3)
+
+
+# row 1 show original data
+# row 2 show reconstructed data
+x, y = next(iter(test_dl))
+indexs = np.random.choice(y, replace=False, size=5)
+num_classes = train_ds.classes
+
+fig, axis = plt.subplots(1, 5, figsize=(25, 8))
+for i, ax in zip(indexs, axis.flat):
+    ax.imshow(x[i][0], cmap='gray')
+    ax.axis('off')
+
+model.eval()
+X = model(x).cpu().detach().numpy()
+fig, axis = plt.subplots(1, 5, figsize=(25, 8))
+for i, ax in zip(indexs, axis.flat):
+    ax.imshow(X[i][0], cmap='gray_r')
+    ax.axis('off')
+
+
+# End PyTorch Section
+-------------------------------------------------------------------------------------
+# Start TF.Keras Section
+
+
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.layers import Input, Conv2D, Reshape, BatchNormalization, MaxPool2D, UpSampling2D, ReLU
+from tensorflow.keras.models import Model, Sequential
+from matplotlib import pyplot as plt
+from IPython import display
+import numpy as np
+
+# load and prepare data
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+x_train = x_train/255.0
+x_test = x_test/255.0
+x_train = x_train.reshape(-1, 28, 28, 1)
+x_test = x_test.reshape(-1, 28, 28, 1)
+
+
+# create same model
+encoder = Sequential([
+    Conv2D(16, 3, padding='same'),
+    BatchNormalization(),
+    ReLU(),
+    MaxPool2D(),
+    Conv2D(8, 3, padding='same'),
+    BatchNormalization(),
+    ReLU(),
+    MaxPool2D(),
+    Conv2D(8, 3, padding='same'),
+    BatchNormalization(),
+    ReLU(),])
+
+decoder = Sequential([
+    Conv2D(8, 3, padding='same'),
+    BatchNormalization(),
+    ReLU(),
+    UpSampling2D(),
+    Conv2D(16, 3, padding='same'),
+    BatchNormalization(),
+    ReLU(),
+    UpSampling2D(),
+    Conv2D(1, 3, padding='same', activation='sigmoid'),
+])
+
+# compile and fit
+img = Input(shape = (28, 28, 1))
+model = Model(inputs = img, outputs = decoder(encoder(img)))
+# model one with binary_crossentropy loss
+model.compile(keras.optimizers.Adam(lr=0.003), loss = "binary_crossentropy")
+model.fit(x_train, x_train, batch_size=128, epochs=3, verbose=1)
+
+# show results
+indexs = np.random.randint(1, 1000, 5)
+fig, axis = plt.subplots(1, 5, figsize=(25, 8))
+for i, ax in zip(indexs, axis.flat):
+    ax.imshow(x_train[i].reshape(28, 28), cmap='gray')
+    ax.axis('off')
+
+X = model.predict(x_train[indexs])
+fig, axis = plt.subplots(1, 5, figsize=(25, 8))
+for i, ax in zip(range(0, 5), axis.flat):
+    ax.imshow(X[i].reshape(28, 28), cmap='gray_r')
+    ax.axis('off')
+    
+  
+# model tow with MSE loss
+img = Input(shape = (28, 28, 1))
+model = Model(inputs = img, outputs = decoder(encoder(img)))
+model.compile(keras.optimizers.Adam(lr=0.003), loss = keras.losses.mse)
+model.fit(x_train, x_train, batch_size=128, epochs=3, verbose=1)
+
+# show results again
+indexs = np.random.randint(1, 1000, 5)
+fig, axis = plt.subplots(1, 5, figsize=(25, 8))
+for i, ax in zip(indexs, axis.flat):
+    ax.imshow(x_train[i].reshape(28, 28), cmap='gray')
+    ax.axis('off')
+
+
+X = model.predict(x_train[indexs])
+fig, axis = plt.subplots(1, 5, figsize=(25, 8))
+for i, ax in zip(range(0, 5), axis.flat):
+    ax.imshow(X[i].reshape(28, 28), cmap='gray_r')
     ax.axis('off')
