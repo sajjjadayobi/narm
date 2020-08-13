@@ -45,39 +45,35 @@ for i, ax in zip(indexs, axis.flat):
 # create AutoEncoder Model
 class ConvAutoEncoder(nn.Module):
     def __init__(self):
-        super(ConvAutoEncoder, self).__init__()
-        self.encoder = nn.Sequential(
-             nn.Conv2d(1, 16, kernel_size=3, padding=(1, 1)),
-             nn.BatchNorm2d(16),
-             nn.ReLU(),
-             nn.MaxPool2d(kernel_size=(2, 2)),
-             nn.Conv2d(16, 8, kernel_size=3, padding=(1, 1)),
-             nn.BatchNorm2d(8),
-             nn.ReLU(),
-             nn.MaxPool2d(kernel_size=(2, 2)),
-             nn.Conv2d(8, 8, kernel_size=3, padding=(1, 1)),
-             nn.BatchNorm2d(8),
-             nn.ReLU(),)
-
-        self.decoder = nn.Sequential(
-            nn.Conv2d(8, 8, kernel_size=3, padding=(1, 1)),
-            nn.BatchNorm2d(8),
-            nn.ReLU(),
-            nn.Upsample(size=(14, 114)),
-            nn.Conv2d(8, 16, kernel_size=3, padding=(1, 1)),
-            nn.BatchNorm2d(16),
-            nn.ReLU(),
-            nn.Upsample(size=(28, 28)),
-            nn.Conv2d(16, 1, kernel_size=3, padding=(1, 1)),  
-            nn.Sigmoid(),)
-
+      super(ConvAutoEncoder, self).__init__()
+      self.encoder = nn.Sequential(
+         nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1),
+         nn.BatchNorm2d(16),
+         nn.ReLU(),
+         nn.Conv2d(16, 8, kernel_size=3, stride=2, padding=1),
+         nn.BatchNorm2d(8),
+         nn.ReLU(),
+         nn.Conv2d(8, 8, kernel_size=3, stride=2, padding=1),
+         nn.BatchNorm2d(8),
+         nn.ReLU(),)
+      
+      self.decoder = nn.Sequential(
+        nn.ConvTranspose2d(8, 8, kernel_size=2, stride=2, padding=0),
+        nn.BatchNorm2d(8),
+        nn.ReLU(),
+        nn.ConvTranspose2d(8, 16, kernel_size=2, stride=2, padding=0),
+        nn.BatchNorm2d(16),
+        nn.ReLU(),
+        nn.ConvTranspose2d(16, 1, kernel_size=3, stride=1, padding=1),  
+        nn.Sigmoid(),)
+      
     def forward(self, x):
-        x = self.encoder(x)
-        self.code = x
-        x = self.decoder(x)
-        return  x
-    
+      x = self.encoder(x)
+      self.code = x
+      x = self.decoder(x)
+      return  x    
 
+    
 # Create a Training Class
 class TrainAE():
 
@@ -243,7 +239,7 @@ for i, ax in zip(indexs, axis.flat):
 
 
 from tensorflow.keras.datasets import mnist
-from tensorflow.keras.layers import Input, Conv2D, Reshape, BatchNormalization, MaxPool2D, UpSampling2D, ReLU
+from tensorflow.keras.layers import Input, Conv2D, Reshape, BatchNormalization, Conv2DTranspose, ReLU
 from tensorflow.keras.models import Model, Sequential
 from matplotlib import pyplot as plt
 from IPython import display
@@ -257,35 +253,34 @@ x_train = x_train.reshape(-1, 28, 28, 1)
 x_test = x_test.reshape(-1, 28, 28, 1)
 
 
-# create same model
+# create almost same model
 encoder = Sequential([
-    Conv2D(16, 3, padding='same'),
+    Conv2D(16, 3, (1, 1), padding='same'),
     BatchNormalization(),
     ReLU(),
-    MaxPool2D(),
-    Conv2D(8, 3, padding='same'),
+    Conv2D(8, 3, (2, 2), padding='same'),
     BatchNormalization(),
     ReLU(),
-    MaxPool2D(),
-    Conv2D(8, 3, padding='same'),
+    Conv2D(8, 3, (2, 2), padding='same'),
     BatchNormalization(),
     ReLU(),])
 
 decoder = Sequential([
-    Conv2D(8, 3, padding='same'),
+    Conv2DTranspose(8, 3, (2, 2), padding='same'),
     BatchNormalization(),
     ReLU(),
-    UpSampling2D(),
-    Conv2D(16, 3, padding='same'),
+    Conv2DTranspose(16, 3, (2, 2), padding='same'),
     BatchNormalization(),
     ReLU(),
-    UpSampling2D(),
-    Conv2D(1, 3, padding='same', activation='sigmoid'),
+    Conv2DTranspose(1, 3, (1, 1), padding='same', activation='sigmoid'),
 ])
 
-# compile and fit
+# summary
 img = Input(shape = (28, 28, 1))
 model = Model(inputs = img, outputs = decoder(encoder(img)))
+model.summary()
+
+# compile and fit
 # model one with binary_crossentropy loss
 model.compile(keras.optimizers.Adam(lr=0.003), loss = "binary_crossentropy")
 model.fit(x_train, x_train, batch_size=128, epochs=3, verbose=1)
