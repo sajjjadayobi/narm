@@ -4,12 +4,10 @@ import tensorflow as tf
 
 # plot online loss or accuracy
 class OnlinePlotter:
-  def __init__(self, sec, xlabel='', ylabel=''):
+  def __init__(self, xlabel='', ylabel=''):
     self.history = []
     self.xlabel = xlabel
     self.ylabel = ylabel
-    self.sec = sec
-    self.tic = time.time()
 
   def plot(self, data):
     self.history.append(data)
