@@ -4,6 +4,8 @@ import tensorflow as tf
 
 # plot online loss or accuracy
 class OnlinePlotter:
+  # plotter = OnlinePlotter('iterations', 'loss/acc')
+  # plotter.plot(loss/acc)
   def __init__(self, xlabel='', ylabel=''):
     self.history = []
     self.xlabel = xlabel
