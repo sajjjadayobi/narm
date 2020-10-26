@@ -1,37 +1,33 @@
 from IPython import display
 import matplotlib.pyplot as plt
-import tensorflow as tf
+import time
 
 # plot online loss or accuracy
 class OnlinePlotter:
-  # plotter = OnlinePlotter('iterations', 'loss/acc')
+  # plotter = OnlinePlotter(1, 'iterations', 'loss/acc', .9)
   # plotter.plot(loss/acc)
-  def __init__(self, xlabel='', ylabel=''):
+  def __init__(self, sec=2, xlabel='', ylabel='', mom=0.0, scale=None):
+    self.scale = scale # type of plots
+    self.mom = mom # for runninig loss
+    self.sec = sec # plot in every 2 sec
     self.history = []
     self.xlabel = xlabel
     self.ylabel = ylabel
+    self.tic = time.time()
 
   def plot(self, data):
-    self.history.append(data)
-    plt.cla()
-    plt.plot(self.history)
-    plt.xlabel(self.xlabel) 
-    plt.ylabel(self.ylabel)
-    display.clear_output(wait=True)
-    display.display(plt.gcf())
-    
-    
-class RuningLoss:
-  def __init__(self, smoothing_factor=0.0):
-    self.alpha = smoothing_factor
-    self.loss = []
-    
-  def append(self, value):
-    self.loss.append( self.alpha*self.loss[-1] + (1-self.alpha)*value if len(self.loss)>0 else value )
-  def get(self):
-    return self.loss    
-    
-    
-def tf_display_model(model):
-  tf.keras.utils.plot_model(model, to_file='tmp.png', show_shapes=True)
-  return display.Image('tmp.png')
+    self.history.append(self.mom*self.history[-1] + (1-self.mom)*data if len(self.history)>0 else data)
+    if time.time() - self.tic > self.sec:
+      plt.cla()
+      if scale == 'semilogy':
+          plt.semilogy(self.history)
+      elif scale == 'loglog':
+          plt.loglog(self.history)
+      elif scale == None:
+          plt.plot(self.history)
+
+      plt.xlabel(self.xlabel) 
+      plt.ylabel(self.ylabel)
+      display.clear_output(wait=True)
+      display.display(plt.gcf())
+      self.tic = time.time()
