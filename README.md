@@ -1,1 +1,3 @@
 ### MY LIFE IN DATA SCIENCE:...
+
+<br><img src='machine_learning_process.png'/><br>
