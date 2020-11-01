@@ -19,11 +19,11 @@ class OnlinePlotter:
     self.history.append(self.mom*self.history[-1] + (1-self.mom)*data if len(self.history)>0 else data)
     if time.time() - self.tic > self.sec:
       plt.cla()
-      if scale == 'semilogy':
+      if self.scale == 'semilogy':
           plt.semilogy(self.history)
-      elif scale == 'loglog':
+      elif self.scale == 'loglog':
           plt.loglog(self.history)
-      elif scale == None:
+      elif self.scale == None:
           plt.plot(self.history)
 
       plt.xlabel(self.xlabel) 
