@@ -2,13 +2,12 @@
 * base on MML Book
 
 ## To Do:
-  - search in youtube for algebra for ML
-  - search in youtube for Math for ML
   - search in farsi web
   - add my notes to jupyter
 
 ## Algebra:
   * Resources:
+    - Good Algebra course on [youtube](https://www.youtube.com/watch?v=T73ldK46JqE&list=PLiiljHvN6z1_o1ztXTKWPrShrMrBLo5P3)
     - Khan acadimi is [here](https://www.khanacademy.org/math/linear-algebra)
     - fastai course is <a href="https://github.com/fastai/numerical-linear-algebra/blob/master/README.md">here</a> 
     - 3brwon1blue is <a href="https://www.3blue1brown.com/essence-of-linear-algebra-page/">here</a> 
@@ -30,8 +29,9 @@
 
 ## Optimization:
   - general math 1 in my Uni
+  - Good mulitvar on [youtube](https://www.youtube.com/watch?v=cWZLPv4ZJhE&list=PLiiljHvN6z193BBzS0Ln8NnqQmzimTW23)
   - base of nn is <a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi">here</a> 
-  - MIT mutivar calculus is <a href="https://www.youtube.com/playlist?list=PL4C4C8A7D06566F38">here</a> 
+  - MIT multivar calculus is <a href="https://www.youtube.com/playlist?list=PL4C4C8A7D06566F38">here</a> 
 
 ## Resource:
   - math for machine learning book notebooks is <a href="https://github.com/mml-book/mml-book.github.io">here</a> 
