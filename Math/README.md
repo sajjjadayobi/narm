@@ -5,6 +5,7 @@
   - search in youtube for algebra for ML
   - search in youtube for Math for ML
   - search in farsi web
+  - add my notes to jupyter
 
 ## Algebra:
   * Resources:
@@ -23,6 +24,7 @@
     - robotech course
 
 ## Optimization:
+  - general math 1 in my Uni
   - base of nn is <a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi">here</a> 
   - MIT mutivar calculus is <a href="https://www.youtube.com/playlist?list=PL4C4C8A7D06566F38">here</a> 
 
