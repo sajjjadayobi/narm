@@ -1,5 +1,6 @@
 # My Life in Math:
 * base on MML Book
+* during with Hands On Machine Learning
 
 ## To Do:
   - search in farsi web
