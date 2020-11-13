@@ -24,6 +24,7 @@
 
 ## Probablity:
   - Resources:
+    * intractive stats & probab [here](https://seeing-theory.brown.edu/index.html#firstPage)
     * robotech course
     * maktab engenring stats and prob [here](https://maktabkhooneh.org/course/%D8%A2%D9%85%D8%A7%D8%B1-%D8%A7%D8%AD%D8%AA%D9%85%D8%A7%D9%84-%D9%85%D9%87%D9%86%D8%AF%D8%B3%DB%8C-mk627/)
     * MIT [here](https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-041-probabilistic-systems-analysis-and-applied-probability-fall-2010/video-lectures/)
