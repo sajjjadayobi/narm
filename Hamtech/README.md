@@ -43,17 +43,14 @@
 
 
 ## Task
-  - Dataset 
-    - check out persian datasets
-    - 
-  - Model
-  - multi task classifiction with ParsBert  
+  - Intent Classification
+  - Question Answering
+  
+    - Spell Checker
+    - Question Generation
   
 ## knowledge
-  - tenserflow akhavanpour
   - transformers stanford
   - implementation keras and tenserflow website
-  
-  
 
   
