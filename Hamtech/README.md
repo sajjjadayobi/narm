@@ -56,7 +56,7 @@
   
 ## In Practice  
 
-### Topic mideling
+### Topic and Types (Intent)
 
 - Model (Bert vs ALBert)
   - 89% paramater reduction 
