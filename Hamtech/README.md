@@ -54,3 +54,13 @@
   - implementation keras and tenserflow website
 
   
+## In Practice  
+
+### Topic mideling
+
+- Model (Bert vs ALBert)
+  - 89% paramater reduction 
+  - SoTA in SQuAD 2.0
+  - Parameters Sharing in early layers
+  - N-gram Masking
+  - ALBert xxlarge is best :)
