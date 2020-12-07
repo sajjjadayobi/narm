@@ -38,29 +38,13 @@
       - 5 label for each question
       - 2 types of irrelevant questions: out of scope, unsuitable to be processed by Chatbot
         - unsuitable to be processed by Chatbot: need to more dialogs
-     - Pre train word-embds and fine-tune with own DATA
      - Methods for better Intent Classification (On Top Of Bert)
 
 
 ## Task
   - Intent Classification
+    - [perain topics & types classifier](https://colab.research.google.com/drive/18uaGfsQuH1jo7OVyntRkkgrKj_mH55uq#scrollTo=AnxFwrUy2UKD)
   - Question Answering
-  
+  - if I'll have time 
     - Spell Checker
     - Question Generation
-  
-## knowledge
-  - transformers stanford
-  - implementation keras and tenserflow website
-
-  
-## In Practice  
-
-### Topic and Types (Intent)
-
-- Model (Bert vs ALBert)
-  - 89% paramater reduction 
-  - SoTA in SQuAD 2.0
-  - Parameters Sharing in early layers
-  - N-gram Masking
-  - ALBert xxlarge is best :)
