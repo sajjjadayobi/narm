@@ -43,13 +43,19 @@
 
 ## Task
   - Intent Classification
-    - [perain topics & types classifier](https://colab.research.google.com/drive/18uaGfsQuH1jo7OVyntRkkgrKj_mH55uq#scrollTo=AnxFwrUy2UKD)
+    - [My Perain Topics & Types Classifier](https://colab.research.google.com/drive/18uaGfsQuH1jo7OVyntRkkgrKj_mH55uq#scrollTo=AnxFwrUy2UKD)
     - [Original Dataset](https://github.com/AmirAhmadHabibi/TheSuperQuestionTypeTopicClassifier)
+    
+  - Incorporate Tabular Data With Transformers (multimodal learning)
+    - as intput of Information Finding Model: [Bert Embedds, topics, types] !!! 
+    - like this [work](https://www.kdnuggets.com/2020/11/tabular-data-huggingface-transformers.html)
+  
+  - Unsupervise Topic Modeling
+    - [Topic2Vector](https://github.com/ddangelov/Top2Vec) 
+    - [BerTopic](https://github.com/MaartenGr/BERTopic#toc)
+    
   - Question Answering
+  
   - if I'll have time 
     - Spell Checker
     - Question Generation
-
-    - Incorporate Tabular Data With Transformers (multimodal learning)
-      - as intput of Information Finding Model: [Bert Embedds, topics, types] !!! 
-      - like this [work](https://www.kdnuggets.com/2020/11/tabular-data-huggingface-transformers.html)
