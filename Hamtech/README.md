@@ -29,7 +29,9 @@
     - how can we create a new thing like this? (for better performance)
     - how can we just use this?
   
-  - Create a Demo with(English or Persian)
+  - Create a Demo with(Persian)
+    - train a multikingual cased on SQuAD (fine-tune)
+    - train ParsBert on translate of SQuAD (fine-tune)
     
     
 
