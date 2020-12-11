@@ -5,9 +5,9 @@
   - Question Classification (Intent Recognizer)
     - Name, Location, yes/no, etc
     - I don't know (irrelevant/uncertain)
-    - Qustion Generation
-      - same Q with different words
-      - Gnerative System or Synonyms
+  - Qustion Generation
+    - same Q with different words
+    - Gnerative System or Synonyms
   - Information Finding 
     - local database
     - online search
@@ -21,18 +21,11 @@
     - Passage - common Questions with Answers from that Organization 
   - Topic modeling 
     - what is the Question about?
-  - a information retrieval Sysem (seach into passage)
+  - a information retrieval Sysem (search into passage)
     - with NER and search for key words
     - or any type of information retrieval (rule base, Bert, etc)
-    
-  - deeppavlov Approach !!!
-    - how can we create a new thing like this? (for better performance)
-    - how can we just use this?
-  
-  - Create a Demo with(Persian)
-    - train a multikingual cased on SQuAD (fine-tune)
-    - train ParsBert on translate of SQuAD (fine-tune)
-    
+  - Question Answering based on related information
+    - end to end QA [library](https://github.com/deepset-ai/haystack)
     
 
 ## Related Works:
@@ -40,9 +33,6 @@
   - open source [awesome QA](https://haystack.deepset.ai/docs/intromd)
   - how does it [work?](https://demo.deeppavlov.ai/#/mu/textqa) 
   - everything about [QA](https://project-awesome.org/seriousran/awesome-qa)
-  - My [Plan]()
-   
-   
 
 
 ## Task
@@ -60,8 +50,5 @@
     
   - information retrieval
   - Question Answering
-    - all multilingual [pretrained](https://huggingface.co/models?filter=question-answering,multilingual) and fine-tuned on [XSQuAD](https://github.com/deepmind/xquad)
-      
-  - if I'll have time 
-    - Spell Checker
-    - Question Generation
+    - [PersianQA](https://colab.research.google.com/drive/1k2QNWqUnSb8C4kEweymX7TWRSF8stS4n#scrollTo=owDosTgZY_pS) without any QA Dataset in Persian !?
+    - all models [pretrained](https://huggingface.co/models?filter=question-answering,multilingual)
