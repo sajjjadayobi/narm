@@ -60,7 +60,8 @@
     
   - information retrieval
   - Question Answering
-
+    - all multilingual [pretrained](https://huggingface.co/models?filter=question-answering,multilingual) and fine-tuned on [XSQuAD](https://github.com/deepmind/xquad)
+      
   - if I'll have time 
     - Spell Checker
     - Question Generation
