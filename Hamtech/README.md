@@ -36,6 +36,15 @@
 
 
 ## Task
+  - Iran Paper Text Classification
+    - I did not care about it :)
+    - [colab](https://colab.research.google.com/drive/10qSVMohOoeMoJeQ8CoGe5bGu9-fJ2Gc2)
+
+
+  - a little Masked Language Model (Bert)
+    - on Persian Shahname (Just for Fun)
+    - based on HuggingFace [colab](https://colab.research.google.com/drive/1NprZo5cNn-xaA3JRmyGbtlmdiv6fEPQo)
+
   - Intent Classification
     - [My Perain Topics & Types Classifier](https://colab.research.google.com/drive/18uaGfsQuH1jo7OVyntRkkgrKj_mH55uq#scrollTo=AnxFwrUy2UKD)
     - [Original Dataset](https://github.com/AmirAhmadHabibi/TheSuperQuestionTypeTopicClassifier)
