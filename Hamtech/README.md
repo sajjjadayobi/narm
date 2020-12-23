@@ -70,7 +70,7 @@
     - idea based on Transformer Machine Translation
       - Vocab is all you need !!!
  	  - From Germany to French
-    - [PersianQA](https://colab.research.google.com/drive/1k2QNWqUnSb8C4kEweymX7TWRSF8stS4n) without any QA Dataset in Persian !?
+    - [PersianQA]() without any QA Dataset in Persian !?
 
 
 
