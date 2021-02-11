@@ -12,12 +12,19 @@
     - Contextual Embeddings
     - next sentence prediction
     - CLS token
-  - Hugging Face
-    - pipeline
-    - how use
-      - Trainer
-    - fine-tune 
-      - text classification
+  - Practice
+    - Keras Examples
+      - text clasification with a single transformers
+      - train Bert from scrtch
+      - semantic similarity with Transformers
+      - Question Answering with Transforers
+    - Hugging Face
+      - pipeline
+      - how use
+        - TFTrainer (in 20 lines of code)
+      - fine-tune 
+        - text classification
+        - with a custom dataset
   - Roberta
   - Albert
   - GPT 2 & 3
@@ -29,6 +36,9 @@
     - Fast-Training
     - LongFormer
     - Question Answering
+    
+  - Impilimentations
+    - HuggingFace Examples
   
     
 # Rules:
