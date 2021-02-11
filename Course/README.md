@@ -4,13 +4,15 @@
     - Tokenizers:
       - byte pair encdoing , ...
     - positinal encoding
-    - gule activation function
     - all type of normalization
-    - AdamW
   - Bert
     - LMs (AR, Masked)
     - Contextual Embeddings
     - next sentence prediction
+    - AdamW
+    - gule activation function
+    - Weight Decay
+    - Word Piece
     - CLS token
   - Practice
     - Keras Examples
@@ -36,6 +38,7 @@
     - Fast-Training
     - LongFormer
     - Question Answering
+    - Lamb optimization
     
   - Impilimentations
     - HuggingFace Examples
