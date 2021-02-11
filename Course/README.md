@@ -11,9 +11,8 @@
     - next sentence prediction
     - AdamW
     - gule activation function
-    - Weight Decay
     - Word Piece
-    - CLS token
+    - Special Tokens
   - Practice
     - Keras Examples
       - text clasification with a single transformers
@@ -31,6 +30,9 @@
   - Albert
   - GPT 2 & 3
   - T5
+  - Persian options
+    - ParsBert
+    - Albert-Persian
   
   - OPTINALS
     - Multilingual Transformers
@@ -39,9 +41,6 @@
     - LongFormer
     - Question Answering
     - Lamb optimization
-    
-  - Impilimentations
-    - HuggingFace Examples
   
     
 # Rules:
