@@ -32,6 +32,10 @@
   
     
 # Rules:
+  - Bublish
+    - Course interview 
+      - with marckdown
+    - and other stuff on my blog posts
   - for any topics
     - see original paper
     - search for paper explaner
