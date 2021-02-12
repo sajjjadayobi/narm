@@ -1,5 +1,7 @@
 # Course Baseline
   - Stanford 2021 as [baseline](http://web.stanford.edu/class/cs224n/)
+  - the course review
+    - why transformers (show cases)
   - Transformers
     - Tokenizers:
       - byte pair encdoing , ...
