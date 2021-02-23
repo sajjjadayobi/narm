@@ -62,7 +62,7 @@ class Trainer:
         self.state = CallbackRunner(callbacks, trainer=self)
 
         self.state.on_train_start
-        for epoch in range(1, self.params['epochs']+1):
+        for epoch in range(1, epochs+1):
             self.params['epoch'] = epoch
             self.state.on_epoch_start
             # train
@@ -74,16 +74,13 @@ class Trainer:
             # valid
             self.state.on_valid_epoch_start
             self.valid_epoch()
-            self.state.on_valid_epoch_end
-            
+            self.state.on_valid_epoch_end    
             self.state.on_epoch_end
-
         self.state.on_train_end
 
+        
     def train_epoch(self):
       self.model.train()
-      losses = Averager()
-      stats = Averagers(len(self.metrcis))
       for step, batch in enumerate(self.train_dl, 0):
           self.params['step'] = step
           self.optimizer.zero_grad()
@@ -107,11 +104,8 @@ class Trainer:
                   self.scheduler.step()
 
           # stats
-          losses.update(loss.item(), self.train_batch)
-          stats.update(metrics.values(), self.train_batch)
-          self.params['loss'] = losses.avg
-          self.params['metrics'] = stats.get_avgs(metrics.keys())
-
+          self.params['loss'] = loss
+          self.params['metrics'] = metrics
           self.state.on_train_batch_end
 
       return None # use for stop
@@ -119,8 +113,6 @@ class Trainer:
     
     def valid_epoch(self):
         self.model.eval()
-        losses = Averager()
-        stats = Averagers(len(self.metrcis))
         with torch.no_grad():
             for step, batch in enumerate(self.valid_dl, 0):
               self.params['step'] = step
@@ -130,15 +122,10 @@ class Trainer:
 
               if self.device == 'cuda': # GPU + FP16
                   with torch.cuda.amp.autocast(enabled=self.fp16):
-                      loss, metrics = self.valid_step(batch)
+                      self.params['loss'], self.params['metrics'] = self.valid_step(batch)
               else:
-                loss, metrics = self.valid_step(batch)
-              # stats
-              losses.update(loss.item(), self.valid_batch)
-              stats.update(metrics.values(), self.valid_batch)
-              self.params['loss'] = losses.avg
-              self.params['metrics'] = stats.get_avgs(metrics.keys())
-
+                self.params['loss'], self.params['metrics'] = self.valid_step(batch)
+              
               self.state.on_valid_batch_end
         
         return None
@@ -171,7 +158,6 @@ class Trainer:
     def loss_plot(self): pass
     def metrcis_plot(self): pass
     def most_worse(self): pass
-
     # freeze
     def freeze(self): pass
     def unfreaze(self): pass
@@ -183,4 +169,4 @@ class Trainer:
     def predict(self): pass
     def evaluate(self): pass
     # expriments
-    def repuodicible(self, seed=0): pass 
+    def repuodicible(self): pass 
