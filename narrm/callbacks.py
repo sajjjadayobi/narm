@@ -3,6 +3,60 @@ import matplotlib.pylab as plt
 import numpy as np
 import torch
 
+
+class StatsAvg(Callback):
+  # inner class  
+  class AvgRunner():
+    def __init__(self, mom=None):
+        self.val, self.avg, self.sum, self.count = 0, 0, 0, 0
+
+    def update(self, val, step=1):
+        self.val = val
+        self.sum += val * step
+        self.count += step
+        self.avg = self.sum / self.count
+
+  # helper functions
+  def __init__(self, mom=None):
+      self.mom = mom
+
+  def update_all(self, items, step):
+      for avg, item in zip(self.metrcis_runners, items):
+          avg.update(item, step)
+
+  def get_avgs(self, names):
+      return {n:a.avg for a, n in zip(self.metrcis_runners, names)}
+
+  # valid section
+  def on_valid_epoch_start(self):
+    self.metrcis_runners = [self.AvgRunner(self.mom) for i in range(len(self.metrcis))]
+    self.loss_runner = self.AvgRunner(self.mom)
+
+  def on_valid_batch_end(self):
+    self.loss_runner.update(self.params['loss'].item(), self.valid_batch)
+    self.params['loss'] = self.loss_runner.avg
+    self.update_all(self.params['metrics'].values(), self.valid_batch)
+    self.params['metrics'] = self.get_avgs(self.params['metrics'].keys()) 
+        
+  def on_valid_epoch_end(self):
+    del self.metrcis_runners
+    del self.loss_runner
+
+  # train section
+  def on_train_epoch_start(self):
+    self.metrcis_runners = [self.AvgRunner(self.mom) for i in range(len(self.metrcis))]
+    self.loss_runner = self.AvgRunner(self.mom)
+
+  def on_train_batch_end(self):
+    self.loss_runner.update(self.params['loss'].item(), self.valid_batch)
+    self.params['loss'] = self.loss_runner.avg
+    self.update_all(self.params['metrics'].values(), self.valid_batch)
+    self.params['metrics'] = self.get_avgs(self.params['metrics'].keys())     
+
+  def on_train_epoch_end(self):
+    del self.metrcis_runners
+    del self.loss_runner
+
 class Reporter(Callback):
     # helper
     def stats2str(self):
