@@ -20,6 +20,8 @@ class Callback():
     def on_valid_epoch_end(self): pass
     def on_valid_batch_start(self): pass
     def on_valid_batch_end(self): pass
+    def on_valid_step_start(self): pass
+    def on_valid_step_end(self): pass
 
 
 class CallbackRunner():
