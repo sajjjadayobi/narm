@@ -3,7 +3,7 @@ import matplotlib.pylab as plt
 import numpy as np
 import torch
 
-
+# order 1
 class StatsAvg(Callback):
   # inner class  
   class AvgRunner():
@@ -57,37 +57,44 @@ class StatsAvg(Callback):
     del self.metrcis_runners
     del self.loss_runner
 
+   
+# order 2
 class Reporter(Callback):
     # helper
-    def stats2str(self):
-        loss = 'loss: ' + str(round(self.params['loss'], 4))
-        metrcis = str('   ').join([f"{k}: {round(v, 3)}" for k, v in self.params['metrics'].items()])
-        return '  ' + loss + '  ' + metrcis
+    def __init__(self, after_step=1):
+        self.after_step = after_step
+
+    def show(self, phase='train'):
+        report = '   loss: ' + str(round(self.params['loss'], 4))
+        report += '  ' + str('   ').join([f"{k}: {round(v, 3)}" for k, v in self.params['metrics'].items()])
+        sys.stdout.write(f"\r {phase}_steps: {self.params['step']+1}/{self.params[f'{phase}_steps']}" + report)
+        sys.stdout.flush()
     
     # overrides
     def on_valid_epoch_end(self): 
         print('', end='\n') 
 
     def on_valid_batch_end(self): 
-        sys.stdout.write(f"\r Valid_Steps: {self.params['step']+1}/{self.params['valid_steps']}" + self.stats2str())
-        sys.stdout.flush()
+        if self.params['step']%self.after_step==0:
+            self.show('valid')
 
     def on_train_batch_end(self):
-        sys.stdout.write(f"\r Train_Steps: {self.params['step']+1}/{self.params['train_steps']}" + self.stats2str())
-        sys.stdout.flush()
+        if self.params['step']%self.after_step==0:
+            self.show('train')
 
+        
     def on_train_epoch_start(self): 
-        print('\n Epoch %2d/%2d' % (self.params['epoch']+1, self.params['epochs']))
+        print('\n Epoch %2d/%2d' % (self.params['epoch'], self.params['epochs']))
         print('-' * 75)
         self.t0 = time.time()
 
     def on_train_epoch_end(self):
         t1 = time.time() - self.t0
         print('  time: %.0fm %.0fs' % (t1//60, t1%60))
-        
-    
-
-class LoggerPlotter(Callback):
+                         
+                         
+# without order 
+class Logger(Callback):
   def __init__(self, plot_loss=True, plot_metrics=True):
       self.plot_loss = plot_loss
       self.plot_metrics = plot_metrics
@@ -114,9 +121,9 @@ class LoggerPlotter(Callback):
             plt.figure(dpi=80)
             plt.plot(self.train_losses)
             plt.plot(self.valid_losses)
-            plt.title('model losses')
+            plt.title('loss')
             plt.ylabel('loss')
-            plt.xlabel('steps')
+            plt.xlabel('epoch')
             plt.legend(['train','valid'], loc='upper left')
             plt.show()
         if self.plot_metrics:
@@ -127,13 +134,13 @@ class LoggerPlotter(Callback):
               plt.plot(v)
               plt.title(k)
               plt.ylabel('value')
-              plt.xlabel('steps')
+              plt.xlabel('epoch')
               plt.legend(['train','valid'], loc='upper left')
               plt.show()
- 
-
+                         
+                         
 class LRFinder(Callback):
-    def __init__(self, min_lr, max_lr, mom=0.9, update_steps=1, epoch=1):
+    def __init__(self, min_lr=1e-6, max_lr=5e-1, mom=0.9, update_steps=1, epoch=1):
         self.min_lr = min_lr
         self.max_lr = max_lr
         self.epoch = epoch 
@@ -143,32 +150,30 @@ class LRFinder(Callback):
                 
     def on_train_start(self):
         self.init_weights = self.model.state_dict()
-        n_iterations = self.params['train_steps']*self.params['epochs']    
-        self.learning_rates = np.geomspace(self.min_lr, self.max_lr, num=n_iterations//self.update_steps+1)
+        n_iter = self.params['train_steps']*self.params['epochs']    
+        self.learning_rates = np.geomspace(self.min_lr, self.max_lr, num=n_iter//self.update_steps+1)
         self.losses=[]
-        self.iteration=0
         self.best_loss=0
-    
+
     def on_train_batch_end(self):
         loss = self.params['loss']
-        if self.iteration!=0:
+        step = self.params['step']
+        if step!=0:
             loss = self.losses[-1]*self.mom+loss*(1-self.mom)
-        if self.iteration==0 or loss < self.best_loss: 
-                self.best_loss = loss
-        if self.iteration%self.update_steps==0:
-            lr = self.learning_rates[self.iteration//self.update_steps]            
+        if step==0 or loss < self.best_loss: 
+            self.best_loss = loss
+        if step%self.update_steps==0:
+            lr = self.learning_rates[step//self.update_steps]            
             self.optimizer.lr = lr
             self.losses.append(loss)            
-        if loss > self.best_loss*self.stop_multiplier:
-            self.model.stop_training = True         
-        self.iteration += 1
+
 
     def on_epoch_end(self):
         if self.params['epoch']==self.epoch:
             lr = min(self.losses)/10
             # show 
             print('\n')
-            plt.figure(figsize=(12, 6))
+            plt.figure(dpi=80)
             plt.plot(self.learning_rates[:len(self.losses)], self.losses)
             plt.title(f'I think we find it: {lr}')
             plt.xlabel("Learning Rate")
