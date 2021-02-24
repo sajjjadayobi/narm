@@ -3,6 +3,50 @@ import matplotlib.pylab as plt
 import numpy as np
 import torch
 
+
+# Basic Class
+class Callback():
+    def set_trainer(self, trainer):
+        self.trainer = trainer
+
+    def __getattr__(self, attr):
+        return getattr(self.trainer, attr)
+
+    # fit
+    def on_train_start(self): pass
+    def on_train_end(self): pass
+    def on_epoch_start(self): pass
+    def on_epoch_end(self): pass
+    # train
+    def on_train_epoch_start(self): pass
+    def on_train_epoch_end(self): pass
+    def on_train_batch_start(self): pass
+    def on_train_batch_end(self): pass
+    # valid
+    def on_valid_epoch_start(self): pass
+    def on_valid_epoch_end(self): pass
+    def on_valid_batch_start(self): pass
+    def on_valid_batch_end(self): pass
+    def on_valid_step_start(self): pass
+    def on_valid_step_end(self): pass
+
+
+# callbacks runner (with default_callbacks)
+class CallbackRunner():
+    def __init__(self, callbacks, trainer):
+        default_callbacks = [StatsAvg(mom=None), Reporter(after_step=1)]
+        self.callbacks = default_callbacks + callbacks
+        for cb in self.callbacks:
+          cb.set_trainer(trainer)
+
+    def __getattr__(self, attr):
+        for cb in self.callbacks:
+          getattr(cb, attr)()
+        return None
+
+
+
+
 # order 1
 class StatsAvg(Callback):
   # inner class  
