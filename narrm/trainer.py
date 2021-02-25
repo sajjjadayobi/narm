@@ -2,16 +2,18 @@
 import torch
 import time, sys
 from torchsummary import summary
+from copy import deepcopy
 
 # utils
-from callback import CallbackRunner
-from callbacks import Averager, Averagers
+from callbacks import CallbackRunner, LRFinder
+
 
 
 class Trainer:
-    def __init__(self, model, train_ds, valid_ds, train_batch=32, valid_batch=64, optimizer=None,
+    def __init__(self, model, train_ds, valid_ds=None, train_bs=32, valid_bs=64, optimizer=None,
                  loss=None, scheduler=None, scheduler_type='epoch', metrcis=[], workers=4, fp16=False):
         
+        # without valid
         self.model = model
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -20,26 +22,21 @@ class Trainer:
         self.metrcis = metrcis
         self.fp16 = fp16
         self.scaler = torch.cuda.amp.GradScaler(enabled=fp16)
-        self.device = None
         self.workers = workers
+        self.stop_training = False # check
         # prepare dls
-        self.train_ds, self.valid_ds = train_ds, valid_ds
-        self.train_batch = train_batch  
-        self.valid_batch = valid_batch
-        self.train_dl = self.get_train_dataloder(train_ds, train_batch)
-        self.valid_dl = self.get_valid_dataloder(valid_ds, valid_batch)
-        # logs 
-        self.stop = False
-        self.params = {'train_steps': len(self.train_dl), 'valid_steps': len(self.valid_dl)}
+        self.train_bs = train_bs
+        self.valid_bs = valid_bs
+        self.train_ds = train_ds
+        self.valid_ds = valid_ds 
+        self.train_dl = self.get_train_dataloder()
+        self.params = {'train_steps': len(self.train_dl)}
+        if valid_ds==None:
+          self.valid_dl = None
+        else:
+          self.valid_dl = self.get_valid_dataloder()
+          self.params['valid_steps'] = len(self.valid_dl)
     
-
-
-    # dataloders
-    def get_train_dataloder(self, ds, batch_size, shuffle=True): 
-        return torch.utils.data.DataLoader(ds, batch_size=batch_size, shuffle=shuffle, num_workers=self.workers)      
-      
-    def get_valid_dataloder(self, ds, batch_size, shuffle=False): 
-        return torch.utils.data.DataLoader(ds, batch_size=batch_size, shuffle=shuffle, num_workers=self.workers)
 
             
     # faster trainig
@@ -47,6 +44,8 @@ class Trainer:
         self.model.to(device)
         self.loss.to(device)
         self.device = device
+        self.optimizer.load_state_dict(self.optimizer.state_dict())
+
 
     # metrics
     def compute_metrics(self, pred, y):
@@ -57,10 +56,10 @@ class Trainer:
         
     # training 
     def fit(self, epochs=1, device='cuda', callbacks=[]):
+        if self.stop_training: return
         self.params['epochs'] = epochs
         self.change_device(device)
         self.state = CallbackRunner(callbacks, trainer=self)
-
         self.state.on_train_start
         for epoch in range(1, epochs+1):
             self.params['epoch'] = epoch
@@ -72,10 +71,14 @@ class Trainer:
             if self.scheduler != None and self.scheduler_type == 'epoch':
                 self.scheduler.step()
             # valid
-            self.state.on_valid_epoch_start
-            self.valid_epoch()
-            self.state.on_valid_epoch_end    
+            if self.valid_dl!=None:
+                self.state.on_valid_epoch_start
+                self.valid_epoch()
+                self.state.on_valid_epoch_end    
+              
             self.state.on_epoch_end
+            if self.stop_training: 
+              break
         self.state.on_train_end
 
         
@@ -107,8 +110,8 @@ class Trainer:
           self.params['loss'] = loss
           self.params['metrics'] = metrics
           self.state.on_train_batch_end
-
-      return None # use for stop
+          if self.stop_training: 
+              break
 
     
     def valid_epoch(self):
@@ -127,10 +130,12 @@ class Trainer:
                 self.params['loss'], self.params['metrics'] = self.valid_step(batch)
               
               self.state.on_valid_batch_end
+              if self.stop_training: 
+                break
         
-        return None
+        
 
-    #@overrider
+    # -------------------------------------------------------------------------------- overrider
     def train_step(self, batch):
         x, y = batch
         out = self.model(x)
@@ -139,7 +144,6 @@ class Trainer:
         metrcis = self.compute_metrics(out, y)
         return loss, metrcis
 
-    #@overrider
     def valid_step(self, batch):
         x, y = batch
         out = self.model(x)
@@ -147,16 +151,34 @@ class Trainer:
         metrcis = self.compute_metrics(out, y)
         return loss, metrcis
 
+    def get_train_dataloder(self): 
+        return torch.utils.data.DataLoader(self.train_ds, batch_size=self.train_bs, shuffle=True, num_workers=self.workers)      
+      
+    def get_valid_dataloder(self): 
+        return torch.utils.data.DataLoader(self.valid_ds, batch_size=self.valid_bs, shuffle=False, num_workers=self.workers)
 
-    # ----------------------------------------------------------------------------------- UTILS
+
+    # -------------------------------------------------------------------------------- utils
     def summary(self):
-        summary(self.model, input_size=(self.train_ds[0][0].shape))
+        summary(self.model, input_size=(self.train_ds[0][0].shape), device='cpu')
 
-     # plotters
-    def set_defualt(self): pass
-    def lr_finder(self): pass
-    def loss_plot(self): pass
-    def metrcis_plot(self): pass
+
+    def lr_finder(self, device='cuda', epochs=1, min_lr=1e-6, max_lr=1e1):
+        init_weights = deepcopy(model.state_dict())
+        # off valid epoch
+        valid_dl = self.valid_dl
+        self.valid_dl = None
+        self.fit(epochs=epochs, device=device, callbacks=[LRFinder(min_lr=min_lr, max_lr=max_lr)])
+        # reset training
+        self.model.load_state_dict(init_weights)
+        self.valid_dl = valid_dl
+
+
+    def set_lr(self, lr):
+        self.optimizer.param_groups[0]['lr'] = lr
+      
+
+    
     def most_worse(self): pass
     # freeze
     def freeze(self): pass
@@ -166,7 +188,6 @@ class Trainer:
     def load(self): pass
     def resume(self): pass
     # infernce
-    def predict(self): pass
     def evaluate(self): pass
     # expriments
     def repuodicible(self): pass 
