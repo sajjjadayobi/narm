@@ -8,10 +8,18 @@ from copy import deepcopy
 from callbacks import CallbackRunner, LRFinder
 
 
+# ofiical
+import torch
+import time, sys
+from torchsummary import summary
+from copy import deepcopy
+from torch.nn.utils import clip_grad_norm_
+
+
 
 class Trainer:
-    def __init__(self, model, train_ds, valid_ds=None, train_bs=32, valid_bs=64, optimizer=None,
-                 loss=None, scheduler=None, scheduler_type='epoch', metrcis=[], workers=4, fp16=False):
+    def __init__(self, model, train_ds, valid_ds=None, train_bs=32, valid_bs=64, optimizer=None, loss=None, 
+                 scheduler=None, scheduler_type='epoch', metrcis=[], workers=4, fp16=False, grad_clip_value='inf'):
         
         # without valid
         self.model = model
@@ -20,6 +28,7 @@ class Trainer:
         self.scheduler_type = scheduler_type
         self.loss = loss
         self.metrcis = metrcis
+        self.grad_clip_value = grad_clip_value
         self.fp16 = fp16
         self.scaler = torch.cuda.amp.GradScaler(enabled=fp16)
         self.workers = workers
@@ -95,6 +104,7 @@ class Trainer:
             with torch.cuda.amp.autocast(enabled=self.fp16):
                 loss, metrics = self.train_step(batch)
                 self.scaler.scale(loss).backward()
+                clip_grad_norm_(self.model.parameters(), self.grad_clip_value)
                 self.scaler.step(self.optimizer)
                 if self.scheduler != None and self.scheduler_type == 'batch':
                     self.scaler.step(self.scheduler)
@@ -102,6 +112,7 @@ class Trainer:
           else: # CPU
               loss, metrics = self.train_step(batch)
               loss.backward()
+              clip_grad_norm_(self.model.parameters(), self.grad_clip_value)
               self.optimizer.step()
               if self.scheduler != None and self.scheduler_type == 'batch':
                   self.scheduler.step()
