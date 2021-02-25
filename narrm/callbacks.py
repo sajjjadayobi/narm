@@ -70,16 +70,19 @@ class StatsAvg(Callback):
 
   def get_avgs(self, names):
       return {n:a.avg for a, n in zip(self.metrcis_runners, names)}
+  
 
   # valid section
   def on_valid_epoch_start(self):
+    self.state.on_train_end
+
     self.metrcis_runners = [self.AvgRunner(self.mom) for i in range(len(self.metrcis))]
     self.loss_runner = self.AvgRunner(self.mom)
 
   def on_valid_batch_end(self):
-    self.loss_runner.update(self.params['loss'].item(), self.valid_batch)
+    self.loss_runner.update(self.params['loss'].item(), self.valid_bs)
     self.params['loss'] = self.loss_runner.avg
-    self.update_all(self.params['metrics'].values(), self.valid_batch)
+    self.update_all(self.params['metrics'].values(), self.valid_bs)
     self.params['metrics'] = self.get_avgs(self.params['metrics'].keys()) 
         
   def on_valid_epoch_end(self):
@@ -92,9 +95,9 @@ class StatsAvg(Callback):
     self.loss_runner = self.AvgRunner(self.mom)
 
   def on_train_batch_end(self):
-    self.loss_runner.update(self.params['loss'].item(), self.valid_batch)
+    self.loss_runner.update(self.params['loss'].item(), self.train_bs)
     self.params['loss'] = self.loss_runner.avg
-    self.update_all(self.params['metrics'].values(), self.valid_batch)
+    self.update_all(self.params['metrics'].values(), self.train_bs)
     self.params['metrics'] = self.get_avgs(self.params['metrics'].keys())     
 
   def on_train_epoch_end(self):
@@ -184,20 +187,17 @@ class Logger(Callback):
                          
                          
 class LRFinder(Callback):
-    def __init__(self, min_lr=1e-6, max_lr=5e-1, mom=0.9, update_steps=1, epoch=1):
+    def __init__(self, min_lr=1e-6, max_lr=5e-1, mom=0.9, update_steps=1):
         self.min_lr = min_lr
         self.max_lr = max_lr
-        self.epoch = epoch 
         self.mom = mom # Make loss smoother using momentum
         self.update_steps = update_steps # update lr after 3 batch
-        self.stop_multiplier = -20*self.mom/3 + 10
                 
     def on_train_start(self):
-        self.init_weights = self.model.state_dict()
         n_iter = self.params['train_steps']*self.params['epochs']    
         self.learning_rates = np.geomspace(self.min_lr, self.max_lr, num=n_iter//self.update_steps+1)
-        self.losses=[]
-        self.best_loss=0
+        self.losses = []
+        self.best_loss = 0
 
     def on_train_batch_end(self):
         loss = self.params['loss']
@@ -207,27 +207,21 @@ class LRFinder(Callback):
         if step==0 or loss < self.best_loss: 
             self.best_loss = loss
         if step%self.update_steps==0:
-            lr = self.learning_rates[step//self.update_steps]            
-            self.optimizer.lr = lr
             self.losses.append(loss)            
+            # update lr
+            lr = self.learning_rates[step//self.update_steps]            
+            self.optimizer.param_groups[0]['lr'] = lr
 
-
-    def on_epoch_end(self):
-        if self.params['epoch']==self.epoch:
-            lr = min(self.losses)/10
-            # show 
-            print('\n')
-            plt.figure(dpi=80)
-            plt.plot(self.learning_rates[:len(self.losses)], self.losses)
-            plt.title(f'I think we find it: {lr}')
-            plt.xlabel("Learning Rate")
-            plt.ylabel("Loss")
-            plt.xscale('log')
-            plt.show()
-            # set for rest training
-            self.optimizer.lr = lr
-            self.model.load_state_dict(self.init_weights)
-            for cb in self.state.callbacks:
-              if cb == self:
-                print('\n Training from Start with new LR (LRFinder removed from Callbacks) \n')
-                del cb
+        # Stop criteria
+        if loss > self.best_loss*1.5:
+            self.trainer.stop_training = True         
+            
+    def on_train_end(self): 
+        print('\n')
+        plt.figure(dpi=80)
+        plt.plot(self.learning_rates[:len(self.losses)], self.losses)
+        plt.title(f'I think we find it: {min(self.losses)/10}')
+        plt.xlabel("Learning Rate")
+        plt.ylabel("Loss")
+        plt.xscale('log')
+        plt.show()
