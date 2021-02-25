@@ -21,7 +21,7 @@ class LRFinderCallback(Callback):
     
     def on_batch_end(self, batch, logs={}):
         loss = logs.get('loss')
-        if self.iteration!=0
+        if self.iteration!=0:
             loss = self.losses[-1]*self.mom+loss*(1-self.mom)
         if self.iteration==0 or loss < self.best_loss: 
                 self.best_loss = loss
