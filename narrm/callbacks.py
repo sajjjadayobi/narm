@@ -213,7 +213,7 @@ class LRFinder(Callback):
             self.optimizer.param_groups[0]['lr'] = lr
 
         # Stop criteria
-        if loss > self.best_loss*1.3:
+        if loss > self.best_loss*1.15:
             self.trainer.stop_training = True         
             
     def on_train_end(self): 
