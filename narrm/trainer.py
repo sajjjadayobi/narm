@@ -1,24 +1,28 @@
 # ofiical
 import torch
-import time, sys
-from torchsummary import summary
-from copy import deepcopy
-
-# utils
-from callbacks import CallbackRunner, LRFinder
-
-
-# ofiical
-import torch
-import time, sys
+import time, sys, gc
 from torchsummary import summary
 from copy import deepcopy
 from torch.nn.utils import clip_grad_norm_
 
 
+# utils
+from callbacks import CallbackRunner, LRFinder
+
+# ofiical
+import time, sys, gc
+from copy import deepcopy
+
+import torch
+import torch.nn as nn
+from torchsummary import summary
+from torch.nn.utils import clip_grad_norm_
+from torch.cuda.amp import autocast, GradScaler
+
+
 
 class Trainer:
-    def __init__(self, model, train_ds, valid_ds=None, train_bs=32, valid_bs=64, optimizer=None, loss=None, 
+    def __init__(self, model, train_ds, valid_ds=None, train_bs=128, valid_bs=64, optimizer=None, loss=None, 
                  scheduler=None, scheduler_type='epoch', metrcis=[], workers=4, fp16=False, grad_clip_value='inf'):
         
         # without valid
@@ -30,7 +34,7 @@ class Trainer:
         self.metrcis = metrcis
         self.grad_clip_value = grad_clip_value
         self.fp16 = fp16
-        self.scaler = torch.cuda.amp.GradScaler(enabled=fp16)
+        self.scaler = GradScaler(enabled=fp16)
         self.workers = workers
         self.stop_training = False # check
         # prepare dls
@@ -86,9 +90,11 @@ class Trainer:
                 self.state.on_valid_epoch_end    
               
             self.state.on_epoch_end
+            self.reset_hardware()
             if self.stop_training: 
               break
         self.state.on_train_end
+        
 
         
     def train_epoch(self):
@@ -101,14 +107,16 @@ class Trainer:
           self.state.on_train_batch_start
              
           if self.device == 'cuda': # GPU + FP16
-            with torch.cuda.amp.autocast(enabled=self.fp16):
-                loss, metrics = self.train_step(batch)
-                self.scaler.scale(loss).backward()
-                clip_grad_norm_(self.model.parameters(), self.grad_clip_value)
-                self.scaler.step(self.optimizer)
-                if self.scheduler != None and self.scheduler_type == 'batch':
-                    self.scaler.step(self.scheduler)
-                self.scaler.update()
+              with autocast(enabled=self.fp16):
+                  loss, metrics = self.train_step(batch)
+              
+              self.scaler.scale(loss).backward()
+              clip_grad_norm_(self.model.parameters(), self.grad_clip_value)
+              self.scaler.step(self.optimizer)
+              if self.scheduler != None and self.scheduler_type == 'batch':
+                  self.scaler.step(self.scheduler)
+              self.scaler.update()
+
           else: # CPU
               loss, metrics = self.train_step(batch)
               loss.backward()
@@ -135,7 +143,7 @@ class Trainer:
               self.state.on_valid_batch_start
 
               if self.device == 'cuda': # GPU + FP16
-                  with torch.cuda.amp.autocast(enabled=self.fp16):
+                  with autocast(enabled=self.fp16):
                       self.params['loss'], self.params['metrics'] = self.valid_step(batch)
               else:
                 self.params['loss'], self.params['metrics'] = self.valid_step(batch)
@@ -151,7 +159,6 @@ class Trainer:
         x, y = batch
         out = self.model(x)
         loss = self.loss(out, y)
-        # self.log('train_loss', loss)
         metrcis = self.compute_metrics(out, y)
         return loss, metrcis
 
@@ -171,7 +178,7 @@ class Trainer:
 
     # -------------------------------------------------------------------------------- utils
     def summary(self):
-        summary(self.model, input_size=(self.train_ds[0][0].shape), device='cpu')
+        summary(self.model.cpu(), input_size=(self.train_ds[0][0].shape), device='cpu')
 
 
     def lr_finder(self, device='cuda', epochs=1, min_lr=1e-6, max_lr=1e1):
@@ -183,12 +190,17 @@ class Trainer:
         # reset training
         self.model.load_state_dict(init_weights)
         self.valid_dl = valid_dl
+        self.stop_training = False
 
 
     def set_lr(self, lr):
         self.optimizer.param_groups[0]['lr'] = lr
       
 
+    def reset_hardware(self):
+        gc.collect()
+        torch.cuda.empty_cache()
+        torch.cuda.reset_peak_memory_stats()
     
     def most_worse(self): pass
     # freeze
